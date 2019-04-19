@@ -1,0 +1,97 @@
+参考サイト：
+python,pip（http://python.zombie-hunting-club.com/entry/2017/11/03/223832）
+flask-pymongo(https://flask-pymongo.readthedocs.io/en/latest/)
+flask(https://qiita.com/zaburo/items/5091041a5afb2a7dffc8),(http://flask.pocoo.org/docs/0.12/quickstart/)
+
+
+
+
+
+
+
+
+#firewallのポート開放
+firewall-cmd --add-port=8000/tcp --zone=public --permanent
+firewall-cmd --reload
+
+#python3.5,pip3.5 install
+yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+yum install -y python35u python35u-libs python35u-devel python35u-pip gcc
+sudo ln -s /usr/bin/python3.5 /usr/bin/python3
+
+#devel install
+sudo yum -y install  httpd-devel python-devel
+sudo yum　-y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel
+
+#flask httpd関連 mongo関連　インストール
+yum -y install httpd
+pip3.5 install flask flask-pymongo pymongo mongo 
+pip3.5 install mod_wsgi
+
+vi /etc/httpd/conf.d/app.conf
+内容は↓参照
+vi /var/www/src/app.wsgi
+内容は↓参照
+
+service httpd restart
+
+
+※"app.py"(flask用ファイル)は"app.wsgi"のパスと同じ場所に作成する。
+また、"templates","static"ディレクトリを同じ場所に作成する。
+/━src━┳app.py
+　　    ┠templates━━━┳index.html
+	┃		 ┠login.html
+	┃		 ┗char.html
+	┃
+        ┗static━━┳css━━main.css
+		    ┠js━━main.js
+		    ┗subWindow━━
+
+app.py
+####################
+# coding: utf-8
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello, Flask!"
+
+if __name__ == "__main__":
+    app.run()
+####################
+
+
+
+app.wsgi
+####################
+# coding: utf-8
+
+import sys
+sys.path.insert(0, '/var/www/src')
+
+#from flask_test import app as application
+from app import app as application
+####################
+
+
+
+/etc/httpd/conf.d/app.conf
+####################
+LoadModule wsgi_module /usr/lib64/python3.5/site-packages/mod_wsgi/server/mod_wsgi-py35.cpython-35m-x86_64-linux-gnu.so
+WSGIScriptAlias / /var/www/src/app.wsgi
+<Directory "/var/www/src/">
+  order deny,allow
+  Allow from all
+</Directory>
+####################
+
+
+
+
+
+
+
+
+
